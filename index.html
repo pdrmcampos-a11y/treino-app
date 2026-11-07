@@ -139,7 +139,11 @@ function prog() {
       <div style="font-weight:700">${fmt(hs[0])} → ${fmt(hs[hs.length - 1])}</div></div>`;
   }
   if (!db.sessions.length) h += `<div class="card sub">Nenhum treino registrado ainda.</div>`;
-  h += `<h2>Backup</h2><div class="card"><button data-a="export" style="width:100%">Copiar backup</button>
+  const n = db.lastBackup ? Logic.daysBetween(db.lastBackup, today()) : null;
+  const late = n == null || n > 30;
+  const hasData = db.sessions.length || db.bodyweight.length;
+  h += `<h2>Backup</h2>` + (hasData ? `<div class="sub ${late ? "tip" : ""}" style="margin-bottom:8px">${n == null ? "Você ainda não fez backup" : n === 0 ? "Último backup: hoje" : "Último backup: há " + n + " dias"}${late ? " · copie um agora" : ""}</div>` : "");
+  h += `<div class="card"><button data-a="export" style="width:100%">Copiar backup</button>
     <textarea id="imp" placeholder="Cole aqui um backup para restaurar" style="margin-top:10px"></textarea>
     <button data-a="import" style="width:100%;margin-top:8px">Restaurar</button></div>`;
   return h;
@@ -153,7 +157,10 @@ function render() {
 // Grava a carga atual do exercício na sessão de hoje (ou remove se já estava feito).
 function setDone(id, on) {
   const kg = W[t].ex.find((e) => e.id === id).bw ? 0 : curKg(id);
-  if (on && kg == null) return; // sem carga não marca
+  if (on && kg == null) { // sem carga não marca: leva o foco para digitar
+    document.querySelector(`input[data-id="${id}"]`).focus();
+    return true; // sem re-render (senão o foco some)
+  }
   Logic.upsert(db.sessions, today(), t, id, on ? kg : null);
   delete draft[id];
   save();
@@ -182,13 +189,13 @@ const act = {
   done: (d) => setDone(d.id, !isDone(d.id)),
   export: () => {
     const s = JSON.stringify(db);
-    (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => alert("Backup copiado. Cole em Notas/WhatsApp."), () => { document.getElementById("imp").value = s; alert("Copie o texto da caixa abaixo."); });
+    (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => { db.lastBackup = today(); save(); alert("Backup copiado. Cole em Notas/WhatsApp."); render(); },() => { document.getElementById("imp").value = s; alert("Copie o texto da caixa abaixo."); });
     return true; // sem re-render (preserva o texto)
   },
   import: () => {
     try {
       const o = JSON.parse(document.getElementById("imp").value);
-      if (!Array.isArray(o.sessions) || !Array.isArray(o.bodyweight)) throw 0;
+      if (!Logic.validBackup(o)) throw 0;
       if (!confirm("Substituir TODOS os dados atuais por este backup?")) return true;
       db.sessions = o.sessions; db.bodyweight = o.bodyweight; save(); bw = lastBW();
     } catch (e) { alert("Backup inválido."); return true; }
@@ -203,6 +210,18 @@ document.addEventListener("change", (ev) => {
   const el = ev.target.closest("input[data-a]");
   if (el) { act.type(el.dataset, el); render(); }
 });
+
+// O iOS retoma o app em vez de reabri-lo: ao voltar em um dia novo, recalcula o treino e o peso.
+let shownDay = today();
+function refreshIfNewDay() {
+  if (shownDay === today()) return;
+  shownDay = today();
+  t = Logic.nextTreino(db.sessions, shownDay);
+  bw = lastBW();
+  for (const k in draft) delete draft[k];
+  render();
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshIfNewDay(); });
 
 render();
 if ("serviceWorker" in navigator && /^https:|^http:\/\/localhost/.test(location.href)) navigator.serviceWorker.register("sw.js");

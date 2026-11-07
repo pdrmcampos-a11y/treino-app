@@ -34,7 +34,19 @@
     return sessions;
   }
 
-  const api = { ORDER, nextTreino, history, suggestUp, upsert };
+  // Backup colado pelo usuário: só aceita o formato exato (um backup torto deixaria o app em branco).
+  const okDate = (d) => typeof d === "string" && /^\d{4}-\d\d-\d\d$/.test(d);
+  function validBackup(o) {
+    return !!o && Array.isArray(o.sessions) && Array.isArray(o.bodyweight)
+      && o.sessions.every((s) => s && okDate(s.d) && ORDER.includes(s.t) && s.kg && typeof s.kg === "object"
+        && Object.values(s.kg).every(Number.isFinite))
+      && o.bodyweight.every((e) => e && okDate(e.d) && Number.isFinite(e.kg));
+  }
+
+  // Dias entre duas datas "YYYY-MM-DD" (ambas lidas em UTC, então a conta é exata).
+  const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+
+  const api = { ORDER, nextTreino, history, suggestUp, upsert, validBackup, daysBetween };
   if (typeof module !== "undefined") module.exports = api;
   else root.Logic = api;
 })(typeof self !== "undefined" ? self : this);
