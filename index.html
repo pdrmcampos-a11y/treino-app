@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Treino</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#121826">
+<meta name="theme-color" content="#0f1623">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,36 +12,68 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
-:root{--bg:#121826;--card:#1e283c;--line:#323e58;--txt:#ecf0f7;--mute:#96a3ba;--ok:#48bb78;--warn:#ffaa6e}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* Paleta: laranja = ação, verde = feito. Textos com contraste ≥ 4,5:1 sobre o fundo. */
+:root{--bg:#0f1623;--card:#192234;--line:#2b3750;--btn:#273449;--txt:#f8fafc;--mute:#aab6ca;
+  --primary:#f97316;--on-primary:#0f172a;--ok:#22c55e;--warn:#fdba74}
+/* manipulation = sem zoom por toque duplo/rápido (o pinça-para-zoom continua funcionando) */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 body{margin:0;background:var(--bg);color:var(--txt);font:17px/1.3 -apple-system,system-ui,sans-serif;
+  -webkit-user-select:none;user-select:none;font-variant-numeric:tabular-nums;
   padding:calc(12px + env(safe-area-inset-top)) 12px calc(88px + env(safe-area-inset-bottom))}
-h2{font-size:15px;color:var(--mute);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.05em}
+body.lock{overflow:hidden}
+input,textarea{-webkit-user-select:text;user-select:text}
+h2{display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:var(--mute);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em}
+h3{margin:0;font-size:20px}
+h4{margin:16px 0 8px;font-size:14px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
 .card{background:var(--card);border-radius:16px;padding:12px 14px;margin-bottom:10px}
-.row{display:flex;align-items:center;gap:6px}
+.card.done{box-shadow:inset 3px 0 0 var(--ok)}
+.card.ex{padding:2px 14px 10px}
+.row{display:flex;align-items:center;gap:8px}
 .grow{flex:1;min-width:0}
 .name{font-weight:600}
 .sub{font-size:14px;color:var(--mute)}
 .tip{color:var(--warn)}
-button{font:inherit;color:var(--txt);background:#2c3a57;border:0;border-radius:12px;min-width:42px;height:48px;padding:0 8px}
-button:active{filter:brightness(1.3)}
-button.on{background:var(--ok);color:#0b2a18;font-weight:700}
-button.pri{background:#4299e1;font-weight:700}
-input{font:inherit;font-size:18px;font-weight:700;width:54px;height:48px;text-align:center;color:var(--txt);
-  background:#121826;border:1px solid var(--line);border-radius:12px}
-textarea{width:100%;height:90px;font-size:16px;background:#121826;color:var(--txt);border:1px solid var(--line);border-radius:12px}
+button{font:inherit;color:var(--txt);background:var(--btn);border:0;border-radius:12px;min-width:44px;height:48px;padding:0 10px;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .08s,filter .08s}
+button:active{transform:scale(.95);filter:brightness(1.3)}
+button.on{background:var(--ok);color:var(--on-primary)}
+button.pri{background:var(--primary);color:var(--on-primary);font-weight:700}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.ic{width:22px;height:22px}
+.info{width:100%;height:auto;min-height:44px;padding:0;background:none;justify-content:space-between;text-align:left;border-radius:8px}
+.info .ic{color:var(--mute);width:18px;height:18px}
+.val{background:none;font-size:26px;font-weight:700}
+.ctl{margin-top:2px}
+input{font:inherit;font-size:18px;font-weight:700;width:52px;height:48px;text-align:center;color:var(--txt);
+  background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0}
+textarea{width:100%;height:90px;font-size:16px;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:12px}
 .chips{display:flex;gap:8px;margin-top:12px}
 .chips button{flex:1}
-.chips .sel{background:#4299e1;font-weight:700}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#0d121d;border-top:1px solid var(--line);
+.chips .sel{background:var(--primary);color:var(--on-primary);font-weight:700}
+.item{width:100%;height:auto;min-height:56px;margin-bottom:10px;padding:12px 14px;border-radius:16px;background:var(--card);text-align:left;gap:8px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:#0b111b;border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;height:56px;border-radius:0;background:none;color:var(--mute)}
-nav .sel{color:var(--txt);font-weight:700}
-svg{width:100%;height:auto}
+nav .sel{color:var(--primary);font-weight:700}
+/* gráfico */
+.chart{width:100%;height:auto;display:block}
+.ln{fill:none;stroke:var(--primary);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.ar{fill:var(--primary);opacity:.14}
+.dot{fill:var(--card);stroke:var(--primary);stroke-width:3}
+.delta{color:var(--ok)}
+/* tela do exercício */
+#sheet[hidden]{display:none}
+.backdrop{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.6)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;max-height:90vh;overflow:auto;background:var(--card);
+  border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.imgs img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:12px;background:var(--bg)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="sheet" hidden></div>
 <nav>
   <button data-a="tab" data-v="hoje">Hoje</button>
   <button data-a="tab" data-v="prog">Progresso</button>
@@ -77,6 +109,12 @@ const W = {
     { id: "sideplank", n: "Prancha lateral", a: "3x20-30s/lado", bw: 1 },
     { id: "finisher", n: "Finisher bike/remo", a: "8x 30s forte/60s leve", bw: 1 } ] }
 };
+const EX = Object.values(W).flatMap((w) => w.ex);
+const exById = (id) => EX.find((e) => e.id === id);
+
+// Ícones SVG (sem emoji); sempre com aria-label no botão que os usa.
+const ic = (p, w = 3) => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p}"/></svg>`;
+const I = { check: ic("M5 12.5l4.5 4.5L19 7.5"), minus: ic("M6 12h12"), plus: ic("M12 6v12M6 12h12"), chev: ic("M9 6l6 6-6 6", 2.5), x: ic("M6 6l12 12M18 6L6 18") };
 
 const KEY = "treino-v1";
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
@@ -86,6 +124,7 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catc
 const pad = (n) => String(n).padStart(2, "0");
 const today = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
 const fmt = (n) => String(n).replace(".", ",");
+const dm = (d) => d.slice(8) + "/" + d.slice(5, 7);
 const num = (s) => { const v = parseFloat(String(s).replace(",", ".")); return isNaN(v) ? null : Math.round(v * 100) / 100; };
 const lastBW = () => db.bodyweight.length ? db.bodyweight[db.bodyweight.length - 1].kg : 65;
 
@@ -98,45 +137,58 @@ const todays = () => db.sessions.find((s) => s.d === today() && s.t === t);
 const isDone = (id) => !!todays() && todays().kg[id] != null;
 const curKg = (id) => draft[id] ?? Logic.history(db.sessions, id).slice(-1)[0] ?? null;
 
+// Gráfico de linha simples. pts = [{d, v}] em ordem de data.
+function lineChart(pts, unit, label) {
+  if (!pts.length) return `<p class="sub">Ainda sem registros.</p>`;
+  const f = pts[0], l = pts[pts.length - 1];
+  if (pts.length < 2) return `<p class="sub">Atual: <b>${fmt(l.v)} ${unit}</b>. O gráfico aparece a partir do segundo registro.</p>`;
+  const vs = pts.map((p) => p.v), lo = Math.min(...vs), hi = Math.max(...vs);
+  const X = (i) => 14 + (292 * i) / (pts.length - 1);
+  const Y = (v) => (hi === lo ? 60 : 106 - (92 * (v - lo)) / (hi - lo));
+  const line = pts.map((p, i) => X(i).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ");
+  const area = X(0).toFixed(1) + ",106 " + line + " " + X(pts.length - 1).toFixed(1) + ",106";
+  const dots = pts.map((p, i) => pts.length <= 12 || i === 0 || i === pts.length - 1 ? `<circle class="dot" cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="4"/>` : "").join("");
+  const diff = Math.round((l.v - f.v) * 100) / 100;
+  const delta = diff === 0 ? "igual" : (diff > 0 ? "+" : "−") + fmt(Math.abs(diff)) + " " + unit;
+  return `<svg class="chart" viewBox="0 0 320 120" role="img" aria-label="${label}: de ${fmt(f.v)} para ${fmt(l.v)} ${unit} em ${pts.length} registros">
+    <polygon class="ar" points="${area}"/><polyline class="ln" points="${line}"/>${dots}</svg>
+    <div class="row sub"><span class="grow">${dm(f.d)} · ${fmt(f.v)} ${unit}</span><b class="delta">${delta}</b><span class="grow" style="text-align:right">${dm(l.d)} · ${fmt(l.v)} ${unit}</span></div>`;
+}
+
+const bwPts = () => db.bodyweight.slice(-60).map((e) => ({ d: e.d, v: e.kg }));
+
 function hoje() {
   const bwSaved = db.bodyweight.some((e) => e.d === today() && e.kg === bw);
+  const doneN = W[t].ex.filter((e) => isDone(e.id)).length;
   let h = `<h2>Peso corporal</h2><div class="card row">
-    <button data-a="bw" data-v="-0.1">−</button>
-    <div class="grow" style="text-align:center;font-size:26px;font-weight:700">${fmt(bw.toFixed(1))} kg</div>
-    <button data-a="bw" data-v="0.1">+</button>
-    <button class="${bwSaved ? "on" : "pri"}" data-a="bwsave">${bwSaved ? "✓" : "Salvar"}</button></div>`;
-  h += `<div class="chips">` + Object.keys(W).map((k) => `<button class="${k === t ? "sel" : ""}" data-a="treino" data-v="${k}">${k}</button>`).join("") + `</div>`;
-  h += `<h2>${W[t].n}</h2>`;
+    <button data-a="bw" data-v="-0.1" aria-label="Diminuir peso corporal">${I.minus}</button>
+    <button class="val grow" data-a="info" data-id="bw" aria-label="Ver histórico do peso corporal">${fmt(bw.toFixed(1))} kg</button>
+    <button data-a="bw" data-v="0.1" aria-label="Aumentar peso corporal">${I.plus}</button>
+    <button class="${bwSaved ? "on" : "pri"}" data-a="bwsave" aria-label="Salvar peso corporal">${bwSaved ? I.check : "Salvar"}</button></div>`;
+  h += `<div class="chips">` + Object.keys(W).map((k) => `<button class="${k === t ? "sel" : ""}" data-a="treino" data-v="${k}" aria-pressed="${k === t}" aria-label="Treino ${k}">${k}</button>`).join("") + `</div>`;
+  h += `<h2><span>${W[t].n}</span><span>${doneN}/${W[t].ex.length}</span></h2>`;
   for (const e of W[t].ex) {
     const done = isDone(e.id), kg = curKg(e.id);
     const up = !done && !e.bw && Logic.suggestUp(Logic.history(db.sessions, e.id));
-    h += `<div class="card row"><div class="grow"><div class="name">${e.n}</div>
-      <div class="sub">${e.a}${up ? ` <span class="tip">· tente +${fmt(e.s)} kg</span>` : ""}</div></div>`;
-    if (!e.bw) h += `<button data-a="step" data-id="${e.id}" data-v="-1">−</button>
-      <input inputmode="decimal" data-a="type" data-id="${e.id}" value="${kg == null ? "" : fmt(kg)}" placeholder="kg">
-      <button data-a="step" data-id="${e.id}" data-v="1">+</button>`;
-    h += `<button class="${done ? "on" : ""}" data-a="done" data-id="${e.id}">✓</button></div>`;
+    h += `<div class="card ex ${done ? "done" : ""}">
+      <button class="info" data-a="info" data-id="${e.id}" aria-label="Ver ${e.n}: imagem e progressão"><span class="name">${e.n}</span>${I.chev}</button>
+      <div class="row ctl"><div class="grow sub">${e.a}${up ? ` <span class="tip">· tente +${fmt(e.s)} kg</span>` : ""}</div>`;
+    if (!e.bw) h += `<button data-a="step" data-id="${e.id}" data-v="-1" aria-label="Diminuir carga de ${e.n}">${I.minus}</button>
+      <input inputmode="decimal" data-a="type" data-id="${e.id}" value="${kg == null ? "" : fmt(kg)}" placeholder="kg" aria-label="Carga de ${e.n} em kg">
+      <button data-a="step" data-id="${e.id}" data-v="1" aria-label="Aumentar carga de ${e.n}">${I.plus}</button>`;
+    h += `<button class="${done ? "on" : ""}" data-a="done" data-id="${e.id}" aria-pressed="${done}" aria-label="Marcar ${e.n} como feito">${I.check}</button></div></div>`;
   }
   return h;
 }
 
-function chart() {
-  const p = db.bodyweight.slice(-30);
-  if (p.length < 2) return `<div class="card sub">Registre o peso em pelo menos 2 dias para ver o gráfico.</div>`;
-  const ys = p.map((e) => e.kg), lo = Math.min(...ys) - 0.5, hi = Math.max(...ys) + 0.5;
-  const pts = p.map((e, i) => (10 + (300 * i) / (p.length - 1)).toFixed(1) + "," + (100 - (90 * (e.kg - lo)) / (hi - lo)).toFixed(1)).join(" ");
-  return `<div class="card"><svg viewBox="0 0 320 110"><polyline points="${pts}" fill="none" stroke="#4299e1" stroke-width="3" stroke-linejoin="round"/></svg>
-    <div class="row sub"><span class="grow">${p[0].d.slice(5)}: ${fmt(p[0].kg)} kg</span><span>${p[p.length - 1].d.slice(5)}: ${fmt(p[p.length - 1].kg)} kg</span></div></div>`;
-}
-
 function prog() {
-  let h = `<h2>Peso corporal</h2>` + chart() + `<h2>Cargas (primeira → atual)</h2>`;
-  for (const k of Object.keys(W)) for (const e of W[k].ex) {
+  let h = `<h2>Peso corporal</h2><div class="card">${lineChart(bwPts(), "kg", "Peso corporal")}</div><h2>Cargas · toque para ver o gráfico</h2>`;
+  for (const e of EX) {
     if (e.bw) continue;
     const hs = Logic.history(db.sessions, e.id);
     if (!hs.length) continue;
-    h += `<div class="card row"><div class="grow"><div class="name">${e.n}</div><div class="sub">${hs.slice(-5).map(fmt).join(" · ")}</div></div>
-      <div style="font-weight:700">${fmt(hs[0])} → ${fmt(hs[hs.length - 1])}</div></div>`;
+    h += `<button class="item" data-a="info" data-id="${e.id}" aria-label="Ver progressão de ${e.n}"><span class="grow"><span class="name">${e.n}</span><br><span class="sub">${hs.slice(-5).map(fmt).join(" · ")}</span></span>
+      <b>${fmt(hs[0])} → ${fmt(hs[hs.length - 1])}</b>${I.chev}</button>`;
   }
   if (!db.sessions.length) h += `<div class="card sub">Nenhum treino registrado ainda.</div>`;
   const n = db.lastBackup ? Logic.daysBetween(db.lastBackup, today()) : null;
@@ -144,9 +196,23 @@ function prog() {
   const hasData = db.sessions.length || db.bodyweight.length;
   h += `<h2>Backup</h2>` + (hasData ? `<div class="sub ${late ? "tip" : ""}" style="margin-bottom:8px">${n == null ? "Você ainda não fez backup" : n === 0 ? "Último backup: hoje" : "Último backup: há " + n + " dias"}${late ? " · copie um agora" : ""}</div>` : "");
   h += `<div class="card"><button data-a="export" style="width:100%">Copiar backup</button>
-    <textarea id="imp" placeholder="Cole aqui um backup para restaurar" style="margin-top:10px"></textarea>
+    <textarea id="imp" aria-label="Backup para restaurar" placeholder="Cole aqui um backup para restaurar" style="margin-top:10px"></textarea>
     <button data-a="import" style="width:100%;margin-top:8px">Restaurar</button></div>`;
   return h;
+}
+
+// Tela do exercício (ou do peso corporal): imagens do movimento + gráfico da progressão.
+function sheetHTML(id) {
+  const e = id === "bw" ? null : exById(id);
+  const title = e ? e.n : "Peso corporal";
+  let body;
+  if (e) {
+    const pts = e.bw ? [] : db.sessions.filter((s) => s.kg[id] != null).map((s) => ({ d: s.d, v: s.kg[id] }));
+    body = `<div class="imgs">` + [0, 1].map((i) => `<img src="img/${id}-${i}.jpg" width="360" height="240" alt="${e.n}: ${i ? "posição final" : "posição inicial"}" onerror="this.style.visibility='hidden'">`).join("") + `</div>
+      <div class="sub">Alvo: ${e.a}</div>` + (e.bw ? "" : `<h4>Progressão da carga</h4>` + lineChart(pts, "kg", title));
+  } else body = `<h4>Histórico</h4>` + lineChart(bwPts(), "kg", title);
+  return `<div class="backdrop" data-a="close"></div><section class="sheet" role="dialog" aria-modal="true" aria-label="${title}">
+    <div class="row"><h3 class="grow">${title}</h3><button data-a="close" aria-label="Fechar">${I.x}</button></div>${body}</section>`;
 }
 
 function render() {
@@ -156,7 +222,7 @@ function render() {
 
 // Grava a carga atual do exercício na sessão de hoje (ou remove se já estava feito).
 function setDone(id, on) {
-  const kg = W[t].ex.find((e) => e.id === id).bw ? 0 : curKg(id);
+  const kg = exById(id).bw ? 0 : curKg(id);
   if (on && kg == null) { // sem carga não marca: leva o foco para digitar
     document.querySelector(`input[data-id="${id}"]`).focus();
     return true; // sem re-render (senão o foco some)
@@ -176,7 +242,7 @@ const act = {
     save();
   },
   step: (d) => {
-    const e = W[t].ex.find((x) => x.id === d.id), cur = curKg(d.id) ?? 0;
+    const e = exById(d.id), cur = curKg(d.id) ?? 0;
     draft[d.id] = Math.max(0, Math.round((cur + +d.v * e.s) * 100) / 100);
     if (isDone(d.id)) setDone(d.id, true); // já marcado: atualiza direto
   },
@@ -187,9 +253,23 @@ const act = {
     if (isDone(d.id)) setDone(d.id, true);
   },
   done: (d) => setDone(d.id, !isDone(d.id)),
+  info: (d) => {
+    const s = document.getElementById("sheet");
+    s.innerHTML = sheetHTML(d.id);
+    s.hidden = false;
+    document.body.classList.add("lock");
+    s.querySelector("button").focus();
+    return true;
+  },
+  close: () => {
+    const s = document.getElementById("sheet");
+    s.hidden = true; s.innerHTML = "";
+    document.body.classList.remove("lock");
+    return true;
+  },
   export: () => {
     const s = JSON.stringify(db);
-    (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => { db.lastBackup = today(); save(); alert("Backup copiado. Cole em Notas/WhatsApp."); render(); },() => { document.getElementById("imp").value = s; alert("Copie o texto da caixa abaixo."); });
+    (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => { db.lastBackup = today(); save(); alert("Backup copiado. Cole em Notas/WhatsApp."); render(); }, () => { document.getElementById("imp").value = s; alert("Copie o texto da caixa abaixo."); });
     return true; // sem re-render (preserva o texto)
   },
   import: () => {
@@ -203,13 +283,14 @@ const act = {
 };
 
 document.addEventListener("click", (ev) => {
-  const el = ev.target.closest("button[data-a]");
+  const el = ev.target.closest("button[data-a],.backdrop[data-a]");
   if (el && !act[el.dataset.a](el.dataset, el)) render();
 });
 document.addEventListener("change", (ev) => {
   const el = ev.target.closest("input[data-a]");
   if (el) { act.type(el.dataset, el); render(); }
 });
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") act.close(); });
 
 // O iOS retoma o app em vez de reabri-lo: ao voltar em um dia novo, recalcula o treino e o peso.
 let shownDay = today();
