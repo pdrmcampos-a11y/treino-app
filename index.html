@@ -76,6 +76,7 @@ details{margin-top:10px}
 summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}
 .rules p{margin:8px 0;font-size:15px;color:var(--mute)}
 .rules b{color:var(--txt)}
+.rules a{color:var(--primary)}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal .wd{text-align:center;font-size:12px;color:var(--mute);padding:4px 0}
 .cal button{min-width:0;height:48px;padding:0;flex-direction:column;border-radius:10px;font-size:15px;line-height:1.15;background:var(--card)}
@@ -97,37 +98,39 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
 </nav>
 <script src="logic.js"></script>
 <script>
-// bw: exercício sem carga (só marca como feito). s: passo do +/− em kg.
+// bw: exercício sem carga (só marca como feito). s: passo do +/− em kg. r: descanso entre séries. note: dica na tela do exercício.
 const W = {
   A: { n: "Pernas: quadríceps e glúteo", ex: [
-    { id: "goblet", n: "Goblet squat", a: "3x10", s: 2 },
-    { id: "legpress", n: "Leg press 45°", a: "3x12", s: 5 },
-    { id: "hipthrust", n: "Hip thrust", a: "3x10-12", s: 5 },
-    { id: "abdutora", n: "Cadeira abdutora", a: "3x15", s: 5 },
-    { id: "calfstand", n: "Panturrilha em pé", a: "3x12-15", s: 5 },
-    { id: "deadbug", n: "Dead bug", a: "3x10/lado", bw: 1 },
-    { id: "plank", n: "Prancha", a: "3x30s", bw: 1 } ] },
-  B: { n: "Superior: empurrar e puxar", ex: [
-    { id: "bench", n: "Supino reto c/ halteres", a: "3x8-12", s: 2 },
-    { id: "pulldown", n: "Puxada frontal", a: "3x8-12", s: 5 },
-    { id: "shoulder", n: "Desenv. sentado c/ halteres", a: "3x10", s: 2 },
-    { id: "row", n: "Remada baixa", a: "3x10-12", s: 5 },
-    { id: "lateral", n: "Elevação lateral", a: "3x12-15", s: 1 },
-    { id: "pushdown", n: "Tríceps na polia", a: "3x12", s: 2.5 },
-    { id: "curl", n: "Rosca direta", a: "3x12", s: 2 },
-    { id: "facepull", n: "Face pull", a: "2x15", s: 2.5 } ] },
-  C: { n: "Pernas: posterior e glúteo", ex: [
-    { id: "rdl", n: "Romanian deadlift (stiff)", a: "3x8-10", s: 2 },
-    { id: "legcurl", n: "Cadeira flexora", a: "3x10-12", s: 5 },
-    { id: "lunge", n: "Afundo reverso", a: "3x8/perna", s: 2 },
-    { id: "adutora", n: "Cadeira adutora", a: "3x12-15", s: 5 },
-    { id: "calfseat", n: "Panturrilha sentado", a: "3x15", s: 5 },
-    { id: "pallof", n: "Pallof press", a: "3x10/lado", s: 2.5 },
-    { id: "sideplank", n: "Prancha lateral", a: "3x20-30s/lado", bw: 1 },
-    { id: "finisher", n: "Finisher bike/remo", a: "8x 30s forte/60s leve", bw: 1 } ] }
+    { id: "goblet", n: "Goblet squat", a: "3x10", r: "90s", s: 2 },
+    { id: "legpress", n: "Leg press 45°", a: "3x12", r: "2 min", s: 5 },
+    { id: "hipthrust", n: "Hip thrust", a: "3x10-12", r: "2 min", s: 5 },
+    { id: "abdutora", n: "Cadeira abdutora", a: "2x15", r: "60s", s: 5 },
+    { id: "calfstand", n: "Panturrilha em pé", a: "3x12-15", r: "60s", s: 5 },
+    { id: "deadbug", n: "Dead bug", a: "3x10/lado", r: "45s", bw: 1 },
+    { id: "plank", n: "Prancha", a: "3x30s", r: "45s", bw: 1 } ] },
+  B: { n: "Superior + intervalado aeróbico", ex: [
+    { id: "bench", n: "Supino reto c/ halteres", a: "3x8-12", r: "2 min", s: 2 },
+    { id: "incline", n: "Supino inclinado c/ halteres", a: "3x10-12", r: "2 min", s: 2 },
+    { id: "pulldown", n: "Puxada frontal", a: "3x8-12", r: "90s", s: 5 },
+    { id: "row", n: "Remada baixa", a: "3x10-12", r: "90s", s: 5 },
+    { id: "lateral", n: "Elevação lateral", a: "3x12-15", r: "60s", s: 1 },
+    { id: "curl", n: "Rosca direta", a: "2x12", r: "60s", s: 2 },
+    { id: "pushdown", n: "Tríceps na polia", a: "2x12", r: "60s", s: 2.5 },
+    { id: "hiitbike", n: "Intervalado 4x4 (bike/remo)", a: "3x 4 min forte", r: "3 min leve", bw: 1,
+      note: "Protocolo de Helgerud: 4 min a 85–95% da FC máx. (esforço 8–9/10, só dá para falar palavras soltas) e 3 min leves entre as séries. Semanas 1–4: 3 séries; da semana 5 em diante: 4 séries." } ] },
+  C: { n: "Pernas: posterior e glúteo + sprints", ex: [
+    { id: "rdl", n: "Romanian deadlift (stiff)", a: "3x8-10", r: "2 min", s: 2 },
+    { id: "legcurl", n: "Cadeira flexora", a: "3x10-12", r: "90s", s: 5 },
+    { id: "lunge", n: "Afundo reverso", a: "3x8/perna", r: "90s", s: 2 },
+    { id: "nordic", n: "Nordic assistido (isquiotibiais)", a: "2x4-6", r: "90s", bw: 1,
+      note: "Ajoelhe com os pés presos. Desça o tronco para a frente o mais devagar que conseguir, apoie as mãos no chão e empurre de volta. Se doer atrás do joelho direito, pule e fale com o médico/fisio." },
+    { id: "adutora", n: "Cadeira adutora", a: "2x12-15", r: "60s", s: 5 },
+    { id: "calfseat", n: "Panturrilha sentado", a: "3x15", r: "60s", s: 5 },
+    { id: "sideplank", n: "Prancha lateral", a: "3x20-30s/lado", r: "45s", bw: 1 },
+    { id: "finisher", n: "Sprints na bike", a: "8x 30s forte", r: "60s leve", bw: 1 } ] }
 };
 // Aquecimento (~10 min). Pernas: ativa glúteo e estabiliza o joelho direito antes de carregar.
-const PERNAS = ["Bicicleta leve, 5 min", "Glute bridge (ponte de glúteo), 2x12", "Lateral band walk (caminhada lateral c/ mini band), 2x10/lado", "TKE (extensão terminal do joelho) c/ elástico, 2x15"];
+const PERNAS = ["Bicicleta leve, 5 min", "Glute bridge (ponte de glúteo), 2x12", "Lateral band walk (caminhada lateral c/ mini band), 2x10/lado", "TKE (extensão terminal do joelho) c/ elástico, 2x15", "Equilíbrio em uma perna, 2x30s/lado"];
 const AQ = {
   A: [...PERNAS, "Goblet squat leve, 1x10", "Joelho direito: dor até 3/10 e sem piorar no dia seguinte"],
   B: ["Remo ergométrico ou bike leve, 5 min", "Band pull-apart (abertura c/ elástico), 2x15", "Rotação externa de ombro c/ elástico, 2x12/lado", "Supino c/ halteres leve (~50%), 1x10"],
@@ -140,11 +143,11 @@ const exById = (id) => EX.find((e) => e.id === id);
 
 // Ícones SVG (sem emoji); sempre com aria-label no botão que os usa.
 const ic = (p, w = 3) => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p}"/></svg>`;
-const I = { check: ic("M5 12.5l4.5 4.5L19 7.5"), minus: ic("M6 12h12"), plus: ic("M12 6v12M6 12h12"), chev: ic("M9 6l6 6-6 6", 2.5), x: ic("M6 6l12 12M18 6L6 18") };
+const I = { check: ic("M5 12.5l4.5 4.5L19 7.5"), minus: ic("M6 12h12"), plus: ic("M12 6v12M6 12h12"), chev: ic("M9 6l6 6-6 6", 2.5), x: ic("M6 6l12 12M18 6L6 18"), up: ic("M12 19V5M6 11l6-6 6 6") };
 
 const KEY = "treino-v1";
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
-const db = Object.assign({ bodyweight: [], sessions: [] }, load());
+const db = Object.assign({ bodyweight: [], sessions: [], up: {} }, load()); // up: {exercício: dia em que marcou "subir a carga"}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { alert("Não consegui salvar. Libere espaço/ative o armazenamento do Safari."); } };
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -163,7 +166,13 @@ let cal = { y: +today().slice(0, 4), m: +today().slice(5, 7) - 1, sel: today() }
 
 const todays = () => db.sessions.find((s) => s.d === today() && s.t === t);
 const isDone = (id) => !!todays() && todays().kg[id] != null;
-const curKg = (id) => draft[id] ?? Logic.history(db.sessions, id).slice(-1)[0] ?? null;
+// "Subir a carga": marcado num dia, vale a partir do treino seguinte (carga anterior + um passo).
+const bumped = (id) => !!db.up[id] && db.up[id] < today();
+const curKg = (id) => {
+  if (draft[id] != null) return draft[id];
+  const last = Logic.history(db.sessions, id).slice(-1)[0] ?? null;
+  return last != null && bumped(id) ? Math.round((last + exById(id).s) * 100) / 100 : last;
+};
 
 // Gráfico de linha simples. pts = [{d, v}] em ordem de data.
 function lineChart(pts, unit, label) {
@@ -202,10 +211,12 @@ function hoje() {
     + (open ? `<ul class="aq">${AQ[t].map((x) => `<li>${x}</li>`).join("")}</ul>` : "") + `</div>`;
   for (const e of W[t].ex) {
     const done = isDone(e.id), kg = curKg(e.id);
-    const up = !done && !e.bw && Logic.suggestUp(Logic.history(db.sessions, e.id));
-    h += `<div class="card ex ${done ? "done" : ""}">
-      <button class="info" data-a="info" data-id="${e.id}" aria-label="Ver ${e.n}: imagem e progressão"><span class="name">${e.n}</span>${I.chev}</button>
-      <div class="row ctl"><div class="grow sub">${e.a}${up ? ` <span class="tip">· tente +${fmt(e.s)} kg</span>` : ""}</div>`;
+    const flag = !e.bw && db.up[e.id], tip = flag ? (bumped(e.id) ? `sobe +${fmt(e.s)} kg hoje` : "sobe no próximo treino")
+      : !done && !e.bw && Logic.suggestUp(Logic.history(db.sessions, e.id)) ? `tente +${fmt(e.s)} kg` : "";
+    h += `<div class="card ex ${done ? "done" : ""}"><div class="row">
+      <button class="info grow" data-a="info" data-id="${e.id}" aria-label="Ver ${e.n}: imagem e progressão"><span class="name">${e.n}</span>${I.chev}</button>`
+      + (e.bw ? "" : `<button class="${flag ? "pri" : ""}" data-a="up" data-id="${e.id}" aria-pressed="${!!flag}" aria-label="Aumentar a carga de ${e.n} no próximo treino">${I.up}</button>`) + `</div>
+      <div class="row ctl"><div class="grow sub">${e.a} · ${e.r}${tip ? ` <span class="tip">· ${tip}</span>` : ""}</div>`;
     if (!e.bw) h += `<button data-a="step" data-id="${e.id}" data-v="-1" aria-label="Diminuir carga de ${e.n}">${I.minus}</button>
       <input inputmode="decimal" data-a="type" data-id="${e.id}" value="${kg == null ? "" : fmt(kg)}" placeholder="kg" aria-label="Carga de ${e.n} em kg">
       <button data-a="step" data-id="${e.id}" data-v="1" aria-label="Aumentar carga de ${e.n}">${I.plus}</button>`;
@@ -244,11 +255,14 @@ function criterios() {
     <div class="row"><span class="grow">Semana <b>${wk || "–"}</b> do ciclo · <b>${stuck}</b> ${stuck === 1 ? "exercício parado" : "exercícios parados"}</span></div>
     <div class="${change ? "verdict" : "sub"}" style="margin-top:4px">${change ? "Hora de trocar o ciclo ↓" : "Continue neste ciclo."}</div>
     <details ${change ? "open" : ""}><summary>Ver critérios</summary>
-    <p><b>Subir a carga</b> (todo treino): fez o topo das reps em todas as séries, com técnica boa e sobrando 1–2 reps → suba um passo. O app avisa com “tente +”.</p>
+    <p><b>Subir a carga</b>: fez o topo das reps em todas as séries, com técnica boa e sobrando 1–2 reps → toque na seta ↑ do exercício; no próximo treino a carga já vem maior (ACSM: +2–10%). O app também avisa “tente +” quando a carga repetiu 2 vezes.</p>
+    <p><b>Esforço e descanso</b>: termine as séries com 1–3 reps sobrando; ir até a falha não é necessário para crescer. Descanse ~2 min nos exercícios básicos (leg press, hip thrust, supino, stiff) e ~1 min nos isoladores.</p>
     <p><b>Trocar o ciclo</b>: a partir da semana 12, ou da semana 8 se 3+ exercícios ficaram com a mesma carga nos últimos 3 treinos (“parados”).</p>
-    <p><b>Como trocar</b>: mantenha A/B/C, troque 2–3 exercícios por variações (ex.: leg press → agachamento no Smith; supino com halteres → supino inclinado), comece ~10% abaixo da carga e suba de novo. Se o joelho estiver bem, inclua saltos baixos e corrida para o futebol/futevôlei.</p>
+    <p><b>Como trocar</b>: mantenha A/B/C, troque 2–3 exercícios por variações (ex.: leg press → agachamento no Smith; supino inclinado → supino na máquina), comece ~10% abaixo da carga e suba de novo. Se o joelho estiver bem, inclua saltos baixos e corrida para o futebol/futevôlei.</p>
     <p><b>Semana leve</b> (metade das séries, ~60% da carga): a cada 6–8 semanas, ou se o cansaço não passa e a carga cai em vários exercícios.</p>
-    <p><b>Joelho direito</b>: dor acima de 3/10, inchaço, falseio ou travamento → pare o exercício e troque por uma variação sem dor. Se durar mais de 1–2 semanas, procure médico ou fisioterapeuta antes de continuar.</p></details></div>`;
+    <p><b>Condicionamento</b>: os intervalados de B e C são 2 dos seus estímulos aeróbicos. Nos dias livres, futebol/futevôlei contam; sem jogo, 30 min leves (dá para conversar). Evite corrida forte no dia anterior ao treino de pernas.</p>
+    <p><b>Joelho direito</b>: dor acima de 3/10, inchaço, falseio ou travamento → pare o exercício e troque por uma variação sem dor. Se durar mais de 1–2 semanas, procure médico ou fisioterapeuta antes de continuar.</p>
+    <p><b>Base científica</b>: volume semanal de ≥10 séries por músculo favorece a hipertrofia (Schoenfeld 2017); com o volume igual, a frequência pouco importa (Schoenfeld 2019). Descanso de 2–3 min rende mais que 1 min (<a href="https://pubmed.ncbi.nlm.nih.gov/26605807/" target="_blank" rel="noopener">Schoenfeld 2016</a>). Falha total não é necessária (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9935748/" target="_blank" rel="noopener">Refalo 2023</a>). Progressão de carga (<a href="https://pubmed.ncbi.nlm.nih.gov/19204579/" target="_blank" rel="noopener">ACSM 2009</a>). Intervalos 4x4 a 90–95% da FC máx. elevaram o VO2máx. de jogadores de futebol em ~10% (Helgerud 2001). Treino de força junto com aeróbico não prejudica o ganho de músculo (<a href="https://research.vu.nl/en/publications/concurrent-strength-and-endurance-training-a-systematic-review-an/" target="_blank" rel="noopener">Schumann 2022</a>); prefira bike a corrida. Programas com Nordic reduzem lesões de isquiotibiais no futebol em ~50% (<a href="https://link.springer.com/10.1007/s40279-016-0638-2" target="_blank" rel="noopener">Al Attar 2017</a>) e o FIFA 11+ reduz lesões em ~39% (<a href="https://bjsm.bmj.com/content/51/7/562" target="_blank" rel="noopener">Thorborg 2017</a>).</p></details></div>`;
 }
 
 // Calendário do mês + detalhe do dia selecionado (treino feito e cargas).
@@ -287,7 +301,7 @@ function sheetHTML(id) {
   if (e) {
     const pts = e.bw ? [] : db.sessions.filter((s) => s.kg[id] != null).map((s) => ({ d: s.d, v: s.kg[id] }));
     body = `<div class="imgs">` + [0, 1].map((i) => `<img src="img/${id}-${i}.jpg" width="360" height="240" alt="${e.n}: ${i ? "posição final" : "posição inicial"}" onerror="this.style.visibility='hidden'">`).join("") + `</div>
-      <div class="sub">Alvo: ${e.a}</div>` + (e.bw ? "" : `<h4>Progressão da carga</h4>` + lineChart(pts, "kg", title));
+      <div class="sub">Alvo: ${e.a} · descanso ${e.r}</div>` + (e.note ? `<p class="sub">${e.note}</p>` : "") + (e.bw ? "" : `<h4>Progressão da carga</h4>` + lineChart(pts, "kg", title));
   } else body = `<h4>Histórico</h4>` + lineChart(bwPts(), "kg", title);
   return `<div class="backdrop" data-a="close"></div><section class="sheet" role="dialog" aria-modal="true" aria-label="${title}">
     <div class="row"><h3 class="grow">${title}</h3><button data-a="close" aria-label="Fechar">${I.x}</button></div>${body}</section>`;
@@ -306,6 +320,7 @@ function setDone(id, on) {
     return true; // sem re-render (senão o foco some)
   }
   Logic.upsert(db.sessions, today(), t, id, on ? kg : null);
+  if (on && bumped(id)) delete db.up[id]; // aumento aplicado
   delete draft[id];
   save();
 }
@@ -335,6 +350,7 @@ const act = {
     if (isDone(d.id)) setDone(d.id, true);
   },
   done: (d) => setDone(d.id, !isDone(d.id)),
+  up: (d) => { if (db.up[d.id]) delete db.up[d.id]; else db.up[d.id] = today(); save(); },
   info: (d) => {
     const s = document.getElementById("sheet");
     s.innerHTML = sheetHTML(d.id);
