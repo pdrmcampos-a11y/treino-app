@@ -68,6 +68,22 @@ nav .sel{color:var(--primary);font-weight:700}
   border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
 .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .imgs img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:12px;background:var(--bg)}
+.info.grow{width:auto}
+.open .ic{transform:rotate(90deg)}
+.aq{margin:0 0 4px;padding-left:20px;font-size:15px;color:var(--mute)}
+.aq li{margin:4px 0}
+details{margin-top:10px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}
+.rules p{margin:8px 0;font-size:15px;color:var(--mute)}
+.rules b{color:var(--txt)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wd{text-align:center;font-size:12px;color:var(--mute);padding:4px 0}
+.cal button{min-width:0;height:48px;padding:0;flex-direction:column;border-radius:10px;font-size:15px;line-height:1.15;background:var(--card)}
+.cal small{font-size:11px;font-weight:700}
+.cal .has{background:var(--ok);color:var(--on-primary);font-weight:700}
+.cal .td{box-shadow:inset 0 0 0 2px var(--primary)}
+.cal .sel{outline:2px solid var(--txt);outline-offset:1px}
+.verdict{color:var(--primary);font-weight:700}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -76,6 +92,7 @@ nav .sel{color:var(--primary);font-weight:700}
 <div id="sheet" hidden></div>
 <nav>
   <button data-a="tab" data-v="hoje">Hoje</button>
+  <button data-a="tab" data-v="cal">Calendário</button>
   <button data-a="tab" data-v="prog">Progresso</button>
 </nav>
 <script src="logic.js"></script>
@@ -109,6 +126,15 @@ const W = {
     { id: "sideplank", n: "Prancha lateral", a: "3x20-30s/lado", bw: 1 },
     { id: "finisher", n: "Finisher bike/remo", a: "8x 30s forte/60s leve", bw: 1 } ] }
 };
+// Aquecimento (~10 min). Pernas: ativa glúteo e estabiliza o joelho direito antes de carregar.
+const PERNAS = ["Bicicleta leve, 5 min", "Glute bridge (ponte de glúteo), 2x12", "Lateral band walk (caminhada lateral c/ mini band), 2x10/lado", "TKE (extensão terminal do joelho) c/ elástico, 2x15"];
+const AQ = {
+  A: [...PERNAS, "Goblet squat leve, 1x10", "Joelho direito: dor até 3/10 e sem piorar no dia seguinte"],
+  B: ["Remo ergométrico ou bike leve, 5 min", "Band pull-apart (abertura c/ elástico), 2x15", "Rotação externa de ombro c/ elástico, 2x12/lado", "Supino c/ halteres leve (~50%), 1x10"],
+  C: [...PERNAS, "Romanian deadlift leve, 1x10", "Joelho direito: dor até 3/10 e sem piorar no dia seguinte"]
+};
+const MES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const DIA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 const EX = Object.values(W).flatMap((w) => w.ex);
 const exById = (id) => EX.find((e) => e.id === id);
 
@@ -132,6 +158,8 @@ let tab = "hoje";
 let t = Logic.nextTreino(db.sessions, today());
 const draft = {}; // carga editada e ainda não marcada
 let bw = lastBW();
+let aqOpen = null; // null = automático: aberto até o aquecimento ser feito ou o 1º exercício marcado
+let cal = { y: +today().slice(0, 4), m: +today().slice(5, 7) - 1, sel: today() };
 
 const todays = () => db.sessions.find((s) => s.d === today() && s.t === t);
 const isDone = (id) => !!todays() && todays().kg[id] != null;
@@ -167,6 +195,11 @@ function hoje() {
     <button class="${bwSaved ? "on" : "pri"}" data-a="bwsave" aria-label="Salvar peso corporal">${bwSaved ? I.check : "Salvar"}</button></div>`;
   h += `<div class="chips">` + Object.keys(W).map((k) => `<button class="${k === t ? "sel" : ""}" data-a="treino" data-v="${k}" aria-pressed="${k === t}" aria-label="Treino ${k}">${k}</button>`).join("") + `</div>`;
   h += `<h2><span>${W[t].n}</span><span>${doneN}/${W[t].ex.length}</span></h2>`;
+  const wd = db.warm === today() + t, open = aqOpen ?? (!wd && doneN === 0);
+  h += `<div class="card ex ${wd ? "done" : ""} ${open ? "open" : ""}"><div class="row">
+    <button class="info grow" data-a="aq" aria-expanded="${open}" aria-label="Aquecimento: mostrar ou esconder"><span class="name">Aquecimento · 10 min</span>${I.chev}</button>
+    <button class="${wd ? "on" : ""}" data-a="warm" aria-pressed="${wd}" aria-label="Marcar aquecimento como feito">${I.check}</button></div>`
+    + (open ? `<ul class="aq">${AQ[t].map((x) => `<li>${x}</li>`).join("")}</ul>` : "") + `</div>`;
   for (const e of W[t].ex) {
     const done = isDone(e.id), kg = curKg(e.id);
     const up = !done && !e.bw && Logic.suggestUp(Logic.history(db.sessions, e.id));
@@ -191,6 +224,7 @@ function prog() {
       <b>${fmt(hs[0])} → ${fmt(hs[hs.length - 1])}</b>${I.chev}</button>`;
   }
   if (!db.sessions.length) h += `<div class="card sub">Nenhum treino registrado ainda.</div>`;
+  h += criterios();
   const n = db.lastBackup ? Logic.daysBetween(db.lastBackup, today()) : null;
   const late = n == null || n > 30;
   const hasData = db.sessions.length || db.bodyweight.length;
@@ -198,6 +232,50 @@ function prog() {
   h += `<div class="card"><button data-a="export" style="width:100%">Copiar backup</button>
     <textarea id="imp" aria-label="Backup para restaurar" placeholder="Cole aqui um backup para restaurar" style="margin-top:10px"></textarea>
     <button data-a="import" style="width:100%;margin-top:8px">Restaurar</button></div>`;
+  return h;
+}
+
+// Quando mudar de treino: situação atual (semana do ciclo, exercícios parados) + regras.
+function criterios() {
+  const wk = Logic.weeksSince(db.sessions, today());
+  const stuck = EX.filter((e) => !e.bw && Logic.stalled(Logic.history(db.sessions, e.id))).length;
+  const change = Logic.shouldChange(wk, stuck);
+  return `<h2>Quando mudar de treino</h2><div class="card rules">
+    <div class="row"><span class="grow">Semana <b>${wk || "–"}</b> do ciclo · <b>${stuck}</b> ${stuck === 1 ? "exercício parado" : "exercícios parados"}</span></div>
+    <div class="${change ? "verdict" : "sub"}" style="margin-top:4px">${change ? "Hora de trocar o ciclo ↓" : "Continue neste ciclo."}</div>
+    <details ${change ? "open" : ""}><summary>Ver critérios</summary>
+    <p><b>Subir a carga</b> (todo treino): fez o topo das reps em todas as séries, com técnica boa e sobrando 1–2 reps → suba um passo. O app avisa com “tente +”.</p>
+    <p><b>Trocar o ciclo</b>: a partir da semana 12, ou da semana 8 se 3+ exercícios ficaram com a mesma carga nos últimos 3 treinos (“parados”).</p>
+    <p><b>Como trocar</b>: mantenha A/B/C, troque 2–3 exercícios por variações (ex.: leg press → agachamento no Smith; supino com halteres → supino inclinado), comece ~10% abaixo da carga e suba de novo. Se o joelho estiver bem, inclua saltos baixos e corrida para o futebol/futevôlei.</p>
+    <p><b>Semana leve</b> (metade das séries, ~60% da carga): a cada 6–8 semanas, ou se o cansaço não passa e a carga cai em vários exercícios.</p>
+    <p><b>Joelho direito</b>: dor acima de 3/10, inchaço, falseio ou travamento → pare o exercício e troque por uma variação sem dor. Se durar mais de 1–2 semanas, procure médico ou fisioterapeuta antes de continuar.</p></details></div>`;
+}
+
+// Calendário do mês + detalhe do dia selecionado (treino feito e cargas).
+function calendario() {
+  const { lead, n } = Logic.monthCells(cal.y, cal.m), ym = cal.y + "-" + pad(cal.m + 1);
+  const by = {};
+  for (const s of db.sessions) if (s.d.startsWith(ym)) (by[s.d] = by[s.d] || []).push(s.t);
+  let h = `<div class="row" style="margin-top:8px"><button data-a="mes" data-v="-1" aria-label="Mês anterior">${I.chev.replace('<svg ', '<svg style="transform:scaleX(-1)" ')}</button>
+    <h3 class="grow" style="text-align:center">${MES[cal.m]} ${cal.y}</h3>
+    <button data-a="mes" data-v="1" aria-label="Próximo mês">${I.chev}</button></div>
+    <div class="sub" style="text-align:center;margin:6px 0 10px">${Object.keys(by).length} dias com treino neste mês</div><div class="cal">`;
+  h += DIA.map((x) => `<div class="wd">${x[0].toUpperCase()}</div>`).join("") + "<div></div>".repeat(lead);
+  for (let i = 1; i <= n; i++) {
+    const d = ym + "-" + pad(i), ts = (by[d] || []).sort().join("");
+    h += `<button class="${ts ? "has" : ""} ${d === today() ? "td" : ""} ${d === cal.sel ? "sel" : ""}" data-a="day" data-v="${d}" aria-label="Dia ${i}${ts ? ", treino " + ts : ""}">${i}${ts ? `<small>${ts}</small>` : ""}</button>`;
+  }
+  h += "</div>";
+  if (cal.sel) {
+    const b = db.bodyweight.find((e) => e.d === cal.sel), x = cal.sel;
+    h += `<h2><span>${DIA[new Date(+x.slice(0, 4), +x.slice(5, 7) - 1, +x.slice(8)).getDay()]}, ${dm(x)}</span><span>${b ? fmt(b.kg) + " kg" : ""}</span></h2>`;
+    const ss = db.sessions.filter((s) => s.d === x);
+    if (!ss.length) h += `<div class="card sub">Sem treino neste dia.</div>`;
+    for (const s of ss) { // só ids conhecidos: um backup colado não injeta HTML
+      h += `<div class="card"><div class="name">Treino ${s.t} · ${W[s.t].n}</div>`
+        + W[s.t].ex.filter((e) => s.kg[e.id] != null).map((e) => `<div class="row sub"><span class="grow">${e.n}</span><b>${e.bw ? "feito" : fmt(s.kg[e.id]) + " kg"}</b></div>`).join("") + `</div>`;
+    }
+  }
   return h;
 }
 
@@ -216,7 +294,7 @@ function sheetHTML(id) {
 }
 
 function render() {
-  document.getElementById("app").innerHTML = tab === "hoje" ? hoje() : prog();
+  document.getElementById("app").innerHTML = tab === "hoje" ? hoje() : tab === "cal" ? calendario() : prog();
   document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("sel", b.dataset.v === tab));
 }
 
@@ -234,7 +312,11 @@ function setDone(id, on) {
 
 const act = {
   tab: (d) => { tab = d.v; },
-  treino: (d) => { t = d.v; },
+  treino: (d) => { t = d.v; aqOpen = null; },
+  aq: () => { const wd = db.warm === today() + t, n = W[t].ex.filter((e) => isDone(e.id)).length; aqOpen = !(aqOpen ?? (!wd && n === 0)); },
+  warm: () => { if (db.warm === today() + t) delete db.warm; else db.warm = today() + t; aqOpen = null; save(); },
+  mes: (d) => { cal.m += +d.v; if (cal.m < 0) { cal.m = 11; cal.y--; } else if (cal.m > 11) { cal.m = 0; cal.y++; } cal.sel = null; },
+  day: (d) => { cal.sel = d.v; },
   bw: (d) => { bw = Math.round((bw + +d.v) * 10) / 10; },
   bwsave: () => {
     const e = db.bodyweight.find((x) => x.d === today());
@@ -299,6 +381,8 @@ function refreshIfNewDay() {
   shownDay = today();
   t = Logic.nextTreino(db.sessions, shownDay);
   bw = lastBW();
+  aqOpen = null;
+  cal = { y: +shownDay.slice(0, 4), m: +shownDay.slice(5, 7) - 1, sel: shownDay };
   for (const k in draft) delete draft[k];
   render();
 }

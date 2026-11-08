@@ -46,7 +46,20 @@
   // Dias entre duas datas "YYYY-MM-DD" (ambas lidas em UTC, então a conta é exata).
   const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
 
-  const api = { ORDER, nextTreino, history, suggestUp, upsert, validBackup, daysBetween };
+  // Semana do ciclo: 1 na semana do primeiro treino registrado (0 se ainda não há treino).
+  const weeksSince = (sessions, today) =>
+    sessions.length ? Math.floor(daysBetween(sessions.map((s) => s.d).sort()[0], today) / 7) + 1 : 0;
+
+  // Parado = mesma carga nos 3 últimos treinos do exercício.
+  const stalled = (h) => h.length >= 3 && h[h.length - 1] === h[h.length - 2] && h[h.length - 2] === h[h.length - 3];
+
+  // Hora de trocar o ciclo: 12 semanas, ou 8+ semanas com 3+ exercícios parados.
+  const shouldChange = (weeks, nStalled) => weeks >= 12 || (weeks >= 8 && nStalled >= 3);
+
+  // Calendário: lead = dia da semana do dia 1 (0 = domingo), n = quantos dias o mês (m: 0-11) tem.
+  const monthCells = (y, m) => ({ lead: new Date(Date.UTC(y, m, 1)).getUTCDay(), n: new Date(Date.UTC(y, m + 1, 0)).getUTCDate() });
+
+  const api = { ORDER, nextTreino, history, suggestUp, upsert, validBackup, daysBetween, weeksSince, stalled, shouldChange, monthCells };
   if (typeof module !== "undefined") module.exports = api;
   else root.Logic = api;
 })(typeof self !== "undefined" ? self : this);
