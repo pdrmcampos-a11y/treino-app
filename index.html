@@ -345,8 +345,9 @@ const act = {
   },
   type: (d, el) => {
     const v = num(el.value);
-    if (v == null) return;
-    draft[d.id] = v;
+    if (v == null) delete draft[d.id]; else draft[d.id] = v;
+    const k = curKg(d.id);
+    el.value = k == null ? "" : fmt(k); // campo vazio/inválido volta ao valor que será salvo
     if (isDone(d.id)) setDone(d.id, true);
   },
   done: (d) => setDone(d.id, !isDone(d.id)),
@@ -386,7 +387,8 @@ document.addEventListener("click", (ev) => {
 });
 document.addEventListener("change", (ev) => {
   const el = ev.target.closest("input[data-a]");
-  if (el) { act.type(el.dataset, el); render(); }
+  // Sem render aqui: o campo perde o foco quando se toca no ✓, e redesenhar a tela trocaria o botão no meio do toque (o ✓ não era registrado).
+  if (el) act.type(el.dataset, el);
 });
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") act.close(); });
 
