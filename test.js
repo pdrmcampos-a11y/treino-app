@@ -62,9 +62,21 @@ const W = { A: { n: "Pernas", ex: [{ id: "g", n: "Goblet", a: "3x10" }, { id: "p
 const rdb = { sessions: [1, 2, 3].map((i) => ({ d: "2026-11-0" + i, t: "A", kg: { g: 16, p: 0 } })), bodyweight: [{ d: "2026-11-01", kg: 65 }, { d: "2026-11-08", kg: 65.4 }],
   xn: { g: { tags: ["Dor"], txt: "joelho", d: "2026-11-09" }, velho: { tags: ["Dor"], txt: "", d: "2026-11-09" } }, notes: { "2026-11-03A": "difícil" } };
 const rep = L.report(rdb, W, "2026-11-09", "PERFIL");
-assert.ok(rep.includes("- Goblet: 16 → 16 → 16 (parado)"));
+assert.ok(rep.includes("- Goblet (kg): 16 → 16 → 16 (parado)"));
 assert.ok(rep.includes("- Goblet [Dor]: joelho"));
 assert.ok(!rep.includes("velho") && !rep.includes("Prancha:")); // exercício removido e exercício sem carga ficam de fora
 assert.ok(rep.includes("PESO CORPORAL: 65 → 65,4") && rep.includes("- 2026-11-03 (treino A): difícil") && rep.includes("TREINOS NAS ÚLTIMAS 6 SEMANAS: 3 (A: 3, B: 0, C: 0)"));
+
+// treino extra (F) e cronômetro
+assert.strictEqual(L.nextTreino([{ d: "2026-11-09", t: "A", kg: { x: 1 } }, { d: "2026-11-10", t: "F", kg: { x: 1 } }], "2026-11-11"), "B"); // F não pula a sequência
+assert.strictEqual(L.nextTreino([{ d: "2026-11-09", t: "A", kg: { x: 1 } }, { d: "2026-11-09", t: "F", kg: { x: 1 } }], "2026-11-09"), "A"); // F no mesmo dia: segue em A
+assert.strictEqual(L.nextTreino([{ d: "2026-11-10", t: "F", kg: { x: 1 } }], "2026-11-11"), "A");
+assert.strictEqual(L.validBackup({ sessions: [{ d: "2026-11-09", t: "F", kg: { sprint: 6 } }], bodyweight: [] }), true);
+assert.strictEqual(L.validBackup({ sessions: [{ d: "2026-11-09", t: "K", kg: {} }], bodyweight: [] }), false);
+assert.deepStrictEqual(["90s", "2 min", "60s leve", "3 min leve", "45s", "ritmo leve", "", undefined].map(L.restSecs), [90, 120, 60, 180, 45, null, null, null]);
+const rw = { A: { n: "P", ex: [{ id: "m", n: "Minutos", a: "x", u: "min", nu: 1 }] }, F: { n: "Campo", ex: [] } };
+const rr = L.report({ sessions: [1, 2, 3].map((i) => ({ d: "2026-11-0" + i, t: "A", kg: { m: 30 } })), bodyweight: [] }, rw, "2026-11-09", "P");
+assert.ok(/- Minutos \(min\): 30 → 30 → 30\n/.test(rr)); // sem "(parado)" em minutos
+assert.ok(rr.includes("F: 0") && rr.includes("F (Campo)"));
 
 console.log("ok");
