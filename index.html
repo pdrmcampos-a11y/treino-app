@@ -146,19 +146,11 @@ const W = {
     { id: "calfseat", n: "Panturrilha sentado", a: "3x15", r: "60s", s: 5 },
     { id: "sideplank", n: "Prancha lateral", a: "3x20-30s/lado", r: "45s", bw: 1 },
     { id: "finisher", n: "Sprints na bike", a: "8x 30s forte", r: "60s leve", bw: 1 } ] },
-  F: { n: "Futebol e futevôlei (campo ou areia)", chip: "FUT", ex: [
-    { id: "sprint", n: "Acelerações 10–20 m", a: "6–8 sprints", r: "60s", u: "reps", s: 1, noimg: 1,
-      note: "Saia parado e acelere forte por 10–20 m; volte caminhando (esse é o descanso). Semanas 1–2: ~80% do esforço; depois, máximo. Só com os isquiotibiais aquecidos. Registre quantos sprints fez." },
-    { id: "cod", n: "Mudança de direção (5-10-5 ou zigue-zague)", a: "4–6 reps", r: "60s", u: "reps", s: 1,
-      note: "Cones a 5 m. Freie com o joelho alinhado ao pé (sem deixar o joelho cair para dentro). Comece em velocidade moderada e aumente aos poucos. Registre quantas repetições fez." },
-    { id: "plyo", n: "Saltos leves (no lugar e lateral)", a: "3x6", r: "60s", bw: 1,
-      note: "Aterrisse macio, joelhos levemente flexionados e alinhados com os pés. Na areia é melhor. Só depois de umas 4 semanas de musculação sem dor no joelho direito; antes disso, pule este item." },
-    { id: "jogo", n: "Jogo com bola (futebol ou futevôlei)", a: "20–40 min", u: "min", s: 5, nu: 1, noimg: 1,
-      note: "Jogos reduzidos (3x3, 4x4; ou 2x2 na areia) dão ganho aeróbico parecido com o de intervalados correndo. Para treinar o condicionamento: 4 blocos de 4 min bem fortes com 3 min de pausa. Registre o tempo jogado." },
+  F: { n: "Futebol e futevôlei (jogo)", chip: "FUT", ex: [
+    { id: "jogo", n: "Jogo ou treino com bola", a: "duração", u: "min", s: 5, nu: 1, noimg: 1,
+      note: "Só o registro: anote quantos minutos jogou (futebol ou futevôlei). Se o joelho incomodou, toque no nome e marque “Dor”." },
     { id: "rpe", n: "Esforço da sessão (0–10)", a: "ao final", u: "/10", s: 1, nu: 1, noimg: 1,
-      note: "0 = descanso, 10 = máximo possível. Ajuda a ver se o total da semana (academia + jogo) está pesado demais." },
-    { id: "calma", n: "Volta à calma", a: "5 min", bw: 1, noimg: 1,
-      note: "Ande 5 min e alongue panturrilha, posterior e quadríceps (30 s cada, sem forçar o joelho)." } ] }
+      note: "0 = descanso, 10 = máximo possível. Ajuda a ver se o total da semana (academia + jogo) está pesado demais." } ] }
 };
 
 // Aquecimento (~10 min). Pernas: ativa glúteo e estabiliza o joelho direito antes de carregar.
@@ -166,8 +158,7 @@ const PERNAS = ["Bicicleta leve, 5 min", "Glute bridge (ponte de glúteo), 2x12"
 const AQ = {
   A: [...PERNAS, "Goblet squat leve, 1x10", "Joelho direito: dor até 3/10 e sem piorar no dia seguinte"],
   B: ["Remo ergométrico ou bike leve, 5 min", "Crucifixo inverso na máquina (peck deck invertido) bem leve, 2x15", "Face pull leve na polia, 2x15", "Supino c/ halteres leve (~50%), 1x10"],
-  C: [...PERNAS, "Romanian deadlift leve, 1x10", "Joelho direito: dor até 3/10 e sem piorar no dia seguinte"],
-  F: ["Trote leve, 5 min", "Mobilidade dinâmica (balanço de pernas, skipping), 2x10 m", "Equilíbrio em uma perna, 2x30s/lado", "Prancha e prancha lateral, 2x20s", "Agachamento com elevação de calcanhar, 2x10", "2 acelerações progressivas de 20 m (~70%)"]
+  C: [...PERNAS, "Romanian deadlift leve, 1x10", "Joelho direito: dor até 3/10 e sem piorar no dia seguinte"]
 };
 const MES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const DIA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
@@ -243,7 +234,7 @@ function hoje() {
   h += `<div class="chips">` + Object.keys(W).map((k) => `<button class="${k === t ? "sel" : ""}" data-a="treino" data-v="${k}" aria-pressed="${k === t}" aria-label="${W[k].chip ? W[k].n : "Treino " + k}">${W[k].chip || k}</button>`).join("") + `</div>`;
   h += `<h2><span>${W[t].n}</span><span>${doneN}/${W[t].ex.length}</span></h2>`;
   const wd = db.warm === today() + t, open = aqOpen ?? (!wd && doneN === 0);
-  h += `<div class="card ex ${wd ? "done" : ""} ${open ? "open" : ""}"><div class="row">
+  if (AQ[t]) h += `<div class="card ex ${wd ? "done" : ""} ${open ? "open" : ""}"><div class="row">
     <button class="info grow" data-a="aq" aria-expanded="${open}" aria-label="Aquecimento: mostrar ou esconder"><span class="name">Aquecimento · 10 min</span>${I.chev}</button>
     <button class="rest" data-tm-go="600" aria-label="Cronometrar 10 minutos de aquecimento">${I.clock}10 min</button>
     <button class="${wd ? "on" : ""}" data-a="warm" aria-pressed="${wd}" aria-label="Marcar aquecimento como feito">${I.check}</button></div>`
@@ -301,9 +292,9 @@ function criterios() {
     <p><b>Trocar o ciclo</b>: a partir da semana 12, ou da semana 8 se 3+ exercícios ficaram com a mesma carga nos últimos 3 treinos (“parados”).</p>
     <p><b>Como trocar</b>: mantenha A/B/C, troque 2–3 exercícios por variações (ex.: leg press → agachamento no Smith; supino inclinado → supino na máquina), comece ~10% abaixo da carga e suba de novo. Se o joelho estiver bem, inclua saltos baixos e corrida para o futebol/futevôlei.</p>
     <p><b>Semana leve</b> (metade das séries, ~60% da carga): a cada 6–8 semanas, ou se o cansaço não passa e a carga cai em vários exercícios.</p>
-    <p><b>Condicionamento</b>: os intervalados de B e C são 2 dos seus estímulos aeróbicos. O treino FUT (futebol e futevôlei) é o terceiro: faça 1–2x por semana, em dia sem treino de pernas no dia seguinte. Sem jogo, 30 min leves (dá para conversar). Evite corrida forte no dia anterior ao treino de pernas.</p>
+    <p><b>Condicionamento</b>: os intervalados de B e C são 2 dos seus estímulos aeróbicos. Seus jogos de futebol e futevôlei (registre no botão FUT) são o terceiro: o ideal é 1–2x por semana, sem treino de pernas no dia seguinte. Sem jogo, 30 min leves (dá para conversar). Evite corrida forte no dia anterior ao treino de pernas.</p>
     <p><b>Joelho direito</b>: dor acima de 3/10, inchaço, falseio ou travamento → pare o exercício e troque por uma variação sem dor. Se durar mais de 1–2 semanas, procure médico ou fisioterapeuta antes de continuar.</p>
-    <p><b>Base científica</b>: volume semanal de ≥10 séries por músculo favorece a hipertrofia (Schoenfeld 2017); com o volume igual, a frequência pouco importa (Schoenfeld 2019). Descanso de 2–3 min rende mais que 1 min (<a href="https://pubmed.ncbi.nlm.nih.gov/26605807/" target="_blank" rel="noopener">Schoenfeld 2016</a>). Falha total não é necessária (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9935748/" target="_blank" rel="noopener">Refalo 2023</a>). Progressão de carga (<a href="https://pubmed.ncbi.nlm.nih.gov/19204579/" target="_blank" rel="noopener">ACSM 2009</a>). Intervalos 4x4 a 90–95% da FC máx. elevaram o VO2máx. de jogadores de futebol em ~10% (Helgerud 2001). Treino de força junto com aeróbico não prejudica o ganho de músculo (<a href="https://research.vu.nl/en/publications/concurrent-strength-and-endurance-training-a-systematic-review-an/" target="_blank" rel="noopener">Schumann 2022</a>); prefira bike a corrida. Programas com Nordic reduzem lesões de isquiotibiais no futebol em ~50% (<a href="https://link.springer.com/10.1007/s40279-016-0638-2" target="_blank" rel="noopener">Al Attar 2017</a>) e o FIFA 11+ reduz lesões em ~39% (<a href="https://bjsm.bmj.com/content/51/7/562" target="_blank" rel="noopener">Thorborg 2017</a>). Jogos reduzidos dão ganho aeróbico parecido com intervalados correndo (<a href="https://doaj.org/article/234fe50542b64ce2bf3b8b5ba22c8fb2" target="_blank" rel="noopener">Clemente 2021</a>). O ganho de velocidade é mais consistente nos primeiros 10 m, por isso as acelerações são curtas.</p></details></div>`;
+    <p><b>Base científica</b>: volume semanal de ≥10 séries por músculo favorece a hipertrofia (Schoenfeld 2017); com o volume igual, a frequência pouco importa (Schoenfeld 2019). Descanso de 2–3 min rende mais que 1 min (<a href="https://pubmed.ncbi.nlm.nih.gov/26605807/" target="_blank" rel="noopener">Schoenfeld 2016</a>). Falha total não é necessária (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9935748/" target="_blank" rel="noopener">Refalo 2023</a>). Progressão de carga (<a href="https://pubmed.ncbi.nlm.nih.gov/19204579/" target="_blank" rel="noopener">ACSM 2009</a>). Intervalos 4x4 a 90–95% da FC máx. elevaram o VO2máx. de jogadores de futebol em ~10% (Helgerud 2001). Treino de força junto com aeróbico não prejudica o ganho de músculo (<a href="https://research.vu.nl/en/publications/concurrent-strength-and-endurance-training-a-systematic-review-an/" target="_blank" rel="noopener">Schumann 2022</a>); prefira bike a corrida. Programas com Nordic reduzem lesões de isquiotibiais no futebol em ~50% (<a href="https://link.springer.com/10.1007/s40279-016-0638-2" target="_blank" rel="noopener">Al Attar 2017</a>) e o FIFA 11+ reduz lesões em ~39% (<a href="https://bjsm.bmj.com/content/51/7/562" target="_blank" rel="noopener">Thorborg 2017</a>). Jogos reduzidos dão ganho aeróbico parecido com intervalados correndo (<a href="https://doaj.org/article/234fe50542b64ce2bf3b8b5ba22c8fb2" target="_blank" rel="noopener">Clemente 2021</a>).</p></details></div>`;
 }
 
 // Revisão: junta programa, cargas e notas num texto para colar no chat e pedir a revisão do treino.
